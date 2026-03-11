@@ -1,0 +1,27 @@
+Progress 
+
+--- 06/03/2026 ---
+
+What we've built so far
+Environment setup
+
+Installed Node.js, confirmed Python 3.11, set up VS Code with extensions
+Scaffolded a proper two-folder project: frontend (Next.js + Tailwind) and backend (FastAPI)
+
+Backend (FastAPI)
+
+Copied core.py and core_networth.py from the Streamlit project — zero changes needed
+Built main.py with two API endpoints: /api/retirement/calculate and /api/networth/calculate
+Backend runs on http://localhost:8000, frontend talks to it via axios
+
+Frontend (Next.js)
+
+Built a home page router that matches your original Streamlit layout exactly — same cards, same palette, same button style
+Built RetirementCalculator.tsx — full 5-step wizard, results page with tier + lifestyle copy
+Built NetWorthTracker.tsx — all 5 tabs (Dashboard, Net Worth, Cash Flow, Runway, Save)
+Applied the retro design system: cream/teal/mustard/ink palette, IBM Plex Mono font, Playfair Display headings, retro card shadows
+
+--- Supabase Data ---
+
+Project URL - https://khhobnuljlbnosvgeppt.supabase.co
+Anon public key - eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtoaG9ibnVsamxibm9zdmdlcHB0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3OTE3NzgsImV4cCI6MjA4ODM2Nzc3OH0.r1Vt3Q58jGhx954a8NScaU6LnLXjx9-Pv70hJB2lBMo
