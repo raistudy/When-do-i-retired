@@ -10,7 +10,10 @@ app = FastAPI()
 # This allows the frontend (running on port 3000) to talk to the backend (port 8000)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000","https://when-do-i-retired.vercel.app"],
+    allow_origins=[
+        "http://localhost:3000",
+        "https://when-do-i-retired.vercel.app",
+    ],
     allow_methods=["*"],
     allow_headers=["*"],
 )
