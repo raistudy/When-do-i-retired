@@ -1,0 +1,29 @@
+{
+  "nav": {
+    "signin": "Masuk",
+    "app": "Buka aplikasi"
+  },
+  "hero": {
+    "tag": "TOOLKIT KEUANGAN PRIBADI",
+    "title": "When do I Retired",
+    "subtitle": "Rencanakan kebebasan finansialmu, satu angka pada satu waktu.",
+    "cta": "Coba sekarang →",
+    "sub_cta": "Gratis. Tanpa kartu kredit."
+  },
+  "preview": {
+    "title": "Dua alat, satu tujuan",
+    "subtitle": "Semua yang kamu butuhkan untuk memahami kondisi keuanganmu dan kapan kamu bisa berhenti bekerja.",
+    "tool1_tag": "ALAT 01",
+    "tool1_title": "Kalkulator Pensiun",
+    "tool1_desc": "Masukkan tabungan, kontribusi bulanan, dan target tahun. Dapatkan proyeksi portofolio, aturan 4%, pendapatan yang disesuaikan inflasi, dan tier gaya hidup.",
+    "tool1_features": ["Kalkulator pertumbuhan majemuk", "Klasifikasi tier gaya hidup", "Penarikan disesuaikan inflasi", "Proyeksi T+5, T+10, T+20"],
+    "tool2_tag": "ALAT 02",
+    "tool2_title": "Pelacak Kekayaan Bersih",
+    "tool2_desc": "Lacak aset, utang, arus kas bulanan, dan dana darurat. Dapatkan status keuangan yang jelas — Stabil, Rentan, atau Stres Tinggi.",
+    "tool2_features": ["Rincian aset dan utang", "Arus kas bulanan", "Kalkulator runway keuangan", "Klasifikasi utang baik vs buruk"]
+  },
+  "footer": {
+    "built": "Dibuat dengan Next.js + FastAPI + Supabase",
+    "tagline": "Gratis selamanya untuk penggunaan pribadi."
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "nav": {
+    "signin": "Sign in",
+    "app": "Go to app"
+  },
+  "hero": {
+    "tag": "PERSONAL FINANCE TOOLKIT",
+    "title": "When do I Retired",
+    "subtitle": "Plan your financial freedom, one number at a time.",
+    "cta": "Try the app →",
+    "sub_cta": "Free to use. No credit card required."
+  },
+  "preview": {
+    "title": "Two tools, one goal",
+    "subtitle": "Everything you need to understand where you stand financially and when you can stop working.",
+    "tool1_tag": "TOOL 01",
+    "tool1_title": "Retirement Calculator",
+    "tool1_desc": "Enter your savings, monthly contributions, and target years. Get a projected pot, 4% rule drawdown, inflation-adjusted income, and a lifestyle tier — from Hustler to The Millionaire.",
+    "tool1_features": ["Compound growth calculator", "Lifestyle tier classification", "Inflation-adjusted drawdown", "T+5, T+10, T+20 projections"],
+    "tool2_tag": "TOOL 02",
+    "tool2_title": "Net Worth Tracker",
+    "tool2_desc": "Track your assets, debts, monthly cash flow, and emergency fund. Get a clear financial status — Stable, Vulnerable, or High Stress.",
+    "tool2_features": ["Assets and debt breakdown", "Monthly cash flow", "Financial runway calculator", "Good vs bad debt classification"]
+  },
+  "footer": {
+    "built": "Built with Next.js + FastAPI + Supabase",
+    "tagline": "Free forever for personal use."
+  }
+}
