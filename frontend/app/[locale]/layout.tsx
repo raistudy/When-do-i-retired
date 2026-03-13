@@ -6,13 +6,14 @@ export const metadata: Metadata = {
   description: "Plan your financial freedom",
 };
 
-export default function LocaleLayout({
+export default async function Layout({
   children,
-  params: { locale },
+  params,
 }: {
-  children: React.ReactNode;
-  params: { locale: string };
+  children: ReactNode;
+  params: Promise<{ locale: string }>;
 }) {
+  const { locale } = await params;
   return (
     <html lang={locale}>
       <head>
