@@ -6,4 +6,8 @@
     "startCommand": "uvicorn main:app --host 0.0.0.0 --port $PORT",
     "restartPolicyType": "ON_FAILURE"
   }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 6d1842b02a7eff91d98aec8ecebb78987a62bcc6
