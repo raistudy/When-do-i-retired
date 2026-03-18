@@ -1,14 +1,17 @@
 {
   "nav": {
     "signin": "Sign in",
-    "app": "Go to app"
+    "app": "Go to app",
+    "signout": "Sign out"
   },
   "hero": {
     "tag": "PERSONAL FINANCE TOOLKIT",
     "title": "When do I Retired",
     "subtitle": "Plan your financial freedom, one number at a time.",
     "cta": "Try the app →",
-    "sub_cta": "Free to use. No credit card required."
+    "sub_cta": "Free to use. No credit card required.",
+    "currency_label": "Currency:",
+    "signed_in_as": "Signed in as"
   },
   "preview": {
     "title": "Two tools, one goal",

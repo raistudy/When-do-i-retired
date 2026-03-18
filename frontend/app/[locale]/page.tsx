@@ -66,7 +66,7 @@ export default function LandingPage() {
               background: "none", border: `2px solid ${C.ink}`,
               borderRadius: 12, padding: "8px 18px",
               fontWeight: 700, fontSize: 13, cursor: "pointer",
-            }}>Sign out</button>
+            }}>{t.nav.signout}</button>
           ) : (
             <button onClick={() => router.push(`/${locale}/auth`)} style={{
               background: C.teal, color: "white", border: `2px solid ${C.ink}`,
@@ -100,7 +100,7 @@ export default function LandingPage() {
 
         {/* Currency selector inline in hero */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 12, marginBottom: 28 }}>
-          <label style={{ fontSize: 13, opacity: 0.6 }}>Currency:</label>
+          <label style={{ fontSize: 13, opacity: 0.6 }}>{t.hero.currency_label}</label>
           <select
             value={currency}
             onChange={e => setCurrency(e.target.value)}
@@ -130,7 +130,7 @@ export default function LandingPage() {
         {/* Signed in indicator */}
         {user && (
           <p style={{ fontSize: "0.78rem", opacity: 0.5, marginTop: 8 }}>
-            Signed in as <b>{user.email}</b>
+            {t.hero.signed_in_as} <b>{user.email}</b>
           </p>
         )}
       </section>
@@ -184,7 +184,7 @@ export default function LandingPage() {
               boxShadow: `2px 2px 0 ${C.ink}`, padding: "10px 20px",
               fontWeight: 700, fontSize: "0.85rem", cursor: "pointer",
               fontFamily: "'IBM Plex Mono', monospace",
-            }}>{t.hero.cta} →</button>
+            }}>{t.hero.cta}</button>
           </div>
 
           {/* Tool 2 — Net Worth */}
@@ -217,7 +217,7 @@ export default function LandingPage() {
               boxShadow: `2px 2px 0 ${C.ink}`, padding: "10px 20px",
               fontWeight: 700, fontSize: "0.85rem", cursor: "pointer",
               fontFamily: "'IBM Plex Mono', monospace",
-            }}>{t.hero.cta} →</button>
+            }}>{t.hero.cta}</button>
           </div>
 
         </div>
