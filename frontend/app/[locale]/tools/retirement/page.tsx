@@ -12,7 +12,6 @@ export default function RetirementPage() {
   const [currency, setCurrency] = useState("EUR");
 
   useEffect(() => {
-    // Read currency from sessionStorage
     const saved = sessionStorage.getItem("currency");
     if (saved) setCurrency(saved);
 
@@ -25,6 +24,7 @@ export default function RetirementPage() {
     <RetirementCalculator
       currency={currency}
       user={user}
+      locale={locale}
       onBack={() => router.push(`/${locale}`)}
     />
   );

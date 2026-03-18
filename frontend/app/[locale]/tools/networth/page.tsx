@@ -24,6 +24,7 @@ export default function NetWorthPage() {
     <NetWorthTracker
       currency={currency}
       user={user}
+      locale={locale}
       onBack={() => router.push(`/${locale}`)}
     />
   );

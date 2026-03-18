@@ -15,6 +15,20 @@ const C = {
   teal: "#1F8A86", mustard: "#E0B12E", ink: "#1B1B1B",
 };
 
+const MESSAGES: Record<string, any> = {
+  en: require("@/messages/en.json"),
+  id: require("@/messages/id.json"),
+  zh: require("@/messages/zh.json"),
+};
+
+// Map backend keys to translated display labels per locale
+const RATE_KEYS = ["High (stocks 10%)", "Medium (bonds 6%)", "Low (savings 3%)"] as const;
+const RATE_LABEL_KEYS: Record<string, string> = {
+  "High (stocks 10%)": "rate_high",
+  "Medium (bonds 6%)": "rate_medium",
+  "Low (savings 3%)": "rate_low",
+};
+
 function fmt(value: number, currency: string) {
   const sym: Record<string, string> = { EUR: "€", IDR: "Rp", CNY: "¥" };
   const s = sym[currency] ?? "";
@@ -74,10 +88,12 @@ const inputStyle = {
 };
 
 export default function RetirementCalculator({
-  currency, onBack, user
+  currency, onBack, user, locale = "en",
 }: {
-  currency: string; onBack: () => void; user: any;
+  currency: string; onBack: () => void; user: any; locale?: string;
 }) {
+  const t = (MESSAGES[locale] || MESSAGES.en).retirement;
+
   const [step, setStep] = useState(1);
   const [name, setName] = useState("");
   const [amount, setAmount] = useState(0);
@@ -129,7 +145,6 @@ export default function RetirementCalculator({
       setResult(res.data);
       setStep(5);
 
-      // Save to Supabase if logged in
       if (user) {
         const { error } = await supabase.from("retirement_snapshots").insert({
           user_id: user.id,
@@ -146,9 +161,9 @@ export default function RetirementCalculator({
             result: res.data,
           },
         });
-        setSaveMsg(error ? "⚠️ Could not save snapshot." : "✅ Snapshot saved!");
+        setSaveMsg(error ? t.save_error : t.save_success);
       } else {
-        setSaveMsg("ℹ️ Sign in to save your results.");
+        setSaveMsg(t.save_signin);
       }
     } catch {
       alert("Could not connect to backend. Make sure uvicorn is running.");
@@ -158,7 +173,7 @@ export default function RetirementCalculator({
 
   if (restoring) return (
     <main style={{ maxWidth: 680, margin: "0 auto", padding: "2rem 1.2rem" }}>
-      <p style={{ opacity: 0.5 }}>Restoring your last session...</p>
+      <p style={{ opacity: 0.5 }}>{t.restoring}</p>
     </main>
   );
 
@@ -172,109 +187,105 @@ export default function RetirementCalculator({
           border: `1px solid ${C.ink}`, borderRadius: 8,
           padding: "3px 10px", marginBottom: 16,
         }}>
-          Signed in as <b>{user.email}</b>
+          {t.signed_in_as} <b>{user.email}</b>
         </div>
       )}
 
       {/* Step 1 */}
       {step === 1 && <>
         <h1 style={{ fontWeight: 800, fontSize: "1.8rem", marginBottom: "1.2rem" }}>
-          Retirement compound calculator
+          {t.title}
         </h1>
-        <Card title="Step 1: Who are we planning for?">
-          Tell me your name, we'll keep the flow simple and mobile-first.
+        <Card title={t.step1_title}>
+          {t.step1_desc}
           <input style={{ ...inputStyle, marginTop: 10 }}
-            placeholder="Your name" value={name}
+            placeholder={t.step1_placeholder} value={name}
             onChange={e => setName(e.target.value)} />
         </Card>
         <div style={{ display: "flex", gap: 10, marginTop: 4 }}>
-          <Btn onClick={onBack}>Back to home</Btn>
-          <Btn primary disabled={!name.trim()} onClick={() => setStep(2)}>Continue ➜</Btn>
+          <Btn onClick={onBack}>{t.back_home}</Btn>
+          <Btn primary disabled={!name.trim()} onClick={() => setStep(2)}>{t.continue}</Btn>
         </div>
       </>}
 
       {/* Step 2 */}
       {step === 2 && <>
         <h1 style={{ fontWeight: 800, fontSize: "1.8rem", marginBottom: "1.2rem" }}>
-          Nice to meet you, {name || "friend"}!
+          {t.step2_title.replace("{name}", name || "friend")}
         </h1>
-        <Card title="Step 2: Starting point">
-          <p style={{ margin: "0 0 8px" }}>Enter your current savings or investment balance.</p>
-          <div style={{ marginBottom: 8, fontSize: 13, opacity: 0.6 }}>Currency: <b>{currency}</b></div>
+        <Card title={t.step2_card}>
+          <p style={{ margin: "0 0 8px" }}>{t.step2_desc}</p>
+          <div style={{ marginBottom: 8, fontSize: 13, opacity: 0.6 }}>{t.step2_currency} <b>{currency}</b></div>
           <input type="number" style={inputStyle} min={0}
-            placeholder={`Starting amount (${currency})`}
+            placeholder={t.step2_placeholder.replace("{currency}", currency)}
             value={amount || ""}
             onChange={e => setAmount(Number(e.target.value))} />
         </Card>
         <div style={{ display: "flex", gap: 10, marginTop: 4 }}>
-          <Btn onClick={() => setStep(1)}>Back</Btn>
-          <Btn primary onClick={() => setStep(3)}>Continue ➜</Btn>
+          <Btn onClick={() => setStep(1)}>{t.back}</Btn>
+          <Btn primary onClick={() => setStep(3)}>{t.continue}</Btn>
         </div>
       </>}
 
       {/* Step 3 */}
       {step === 3 && <>
-        <h1 style={{ fontWeight: 800, fontSize: "1.8rem", marginBottom: "1.2rem" }}>Monthly investing</h1>
-        <Card title="Step 3: Add monthly contributions?">
-          <p style={{ margin: "0 0 12px" }}>
-            Monthly investing (DCA) usually matters more than tiny return differences.
-          </p>
+        <h1 style={{ fontWeight: 800, fontSize: "1.8rem", marginBottom: "1.2rem" }}>{t.step3_title}</h1>
+        <Card title={t.step3_card}>
+          <p style={{ margin: "0 0 12px" }}>{t.step3_desc}</p>
           <div style={{ display: "flex", gap: 10, marginBottom: 12 }}>
-            {["No", "Yes"].map(opt => (
-              <Btn key={opt} primary={wantMonthly === (opt === "Yes")}
-                onClick={() => setWantMonthly(opt === "Yes")}>{opt}</Btn>
+            {[t.step3_no, t.step3_yes].map((opt, i) => (
+              <Btn key={opt} primary={wantMonthly === (i === 1)}
+                onClick={() => setWantMonthly(i === 1)}>{opt}</Btn>
             ))}
           </div>
           {wantMonthly && (
             <input type="number" style={inputStyle} min={0}
-              placeholder={`Monthly amount (${currency})`}
+              placeholder={t.step3_placeholder.replace("{currency}", currency)}
               value={monthly || ""}
               onChange={e => setMonthly(Number(e.target.value))} />
           )}
         </Card>
         <div style={{ display: "flex", gap: 10, marginTop: 4 }}>
-          <Btn onClick={() => setStep(2)}>Back</Btn>
-          <Btn primary onClick={() => setStep(4)}>Continue ➜</Btn>
+          <Btn onClick={() => setStep(2)}>{t.back}</Btn>
+          <Btn primary onClick={() => setStep(4)}>{t.continue}</Btn>
         </div>
       </>}
 
       {/* Step 4 */}
       {step === 4 && <>
         <h1 style={{ fontWeight: 800, fontSize: "1.8rem", marginBottom: "1.2rem" }}>
-          Return profile and timeline
+          {t.step4_title}
         </h1>
-        <Card title="Step 4: Assumptions">
-          <p style={{ margin: "0 0 10px" }}>
-            Choose a return profile and target years. These are averages — reality varies.
-          </p>
+        <Card title={t.step4_card}>
+          <p style={{ margin: "0 0 10px" }}>{t.step4_desc}</p>
           <div style={{ marginBottom: 14 }}>
-            <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 8 }}>Return profile</div>
+            <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 8 }}>{t.step4_return_label}</div>
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              {Object.keys(RATE_MAP).map(k => (
+              {RATE_KEYS.map(k => (
                 <button key={k} onClick={() => setReturnChoice(k)} style={{
                   background: returnChoice === k ? C.teal : C.cream,
                   color: returnChoice === k ? "white" : C.ink,
                   border: `2px solid ${C.ink}`, borderRadius: 14,
                   boxShadow: `2px 2px 0 ${C.ink}`, padding: "10px 16px",
                   fontWeight: 700, fontSize: 14, textAlign: "left", cursor: "pointer",
-                }}>{k}</button>
+                }}>{t[RATE_LABEL_KEYS[k]]}</button>
               ))}
             </div>
           </div>
           <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 6 }}>
-            Target years from now: <span style={{ color: C.teal }}>{years}</span>
+            {t.step4_years_label} <span style={{ color: C.teal }}>{years}</span>
           </div>
           <input type="range" min={1} max={60} value={years}
             onChange={e => setYears(Number(e.target.value))}
             style={{ width: "100%", accentColor: C.teal }} />
           <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, opacity: 0.5 }}>
-            <span>1 yr</span><span>60 yrs</span>
+            <span>{t.step4_min}</span><span>{t.step4_max}</span>
           </div>
         </Card>
         <div style={{ display: "flex", gap: 10, marginTop: 4 }}>
-          <Btn onClick={() => setStep(3)}>Back</Btn>
+          <Btn onClick={() => setStep(3)}>{t.back}</Btn>
           <Btn primary onClick={calculate} disabled={loading}>
-            {loading ? "Calculating..." : "See results ➜"}
+            {loading ? t.step4_calculating : t.step4_see_results}
           </Btn>
         </div>
       </>}
@@ -282,13 +293,12 @@ export default function RetirementCalculator({
       {/* Step 5: Results */}
       {step === 5 && result && <>
         <h1 style={{ fontWeight: 800, fontSize: "1.8rem", marginBottom: 6 }}>
-          Your compound growth plan
+          {t.results_title}
         </h1>
         <p style={{ fontSize: 13, opacity: 0.6, marginBottom: "1.2rem" }}>
-          Hi {name}! Currency: <b>{currency}</b> • Return: <b>{returnChoice}</b> • <b>{years} years</b>
+          {name} • {currency} • {returnChoice} • {years} {t.results_years}
         </p>
 
-        {/* Save message */}
         {saveMsg && (
           <div style={{
             fontSize: 13, marginBottom: 12, padding: "8px 14px",
@@ -297,41 +307,39 @@ export default function RetirementCalculator({
           }}>{saveMsg}</div>
         )}
 
-        {/* Clickable metric cards */}
         <div style={{ display: "flex", gap: 10, marginBottom: 16 }}>
-          <Metric label="Starting amount" value={fmt(amount, currency)} onClick={() => setStep(2)} />
-          <Metric label="Monthly contribution" value={fmt(wantMonthly ? monthly : 0, currency)} onClick={() => setStep(3)} />
-          <Metric label="Target" value={`${years} years`} onClick={() => setStep(4)} />
+          <Metric label={t.results_starting} value={fmt(amount, currency)} onClick={() => setStep(2)} />
+          <Metric label={t.results_monthly} value={fmt(wantMonthly ? monthly : 0, currency)} onClick={() => setStep(3)} />
+          <Metric label={t.results_target} value={`${years} ${t.results_years}`} onClick={() => setStep(4)} />
         </div>
 
         <hr style={{ border: "none", borderTop: `2px dashed rgba(27,27,27,0.12)`, margin: "16px 0" }} />
 
-        <Card title={`Target outcome in ${years} years`}>
-          <p><b>Projected pot:</b> {fmt(result.fv, currency)}</p>
-          <p><b>4% rule draw:</b> {fmt(result.annual_drawdown, currency)}/yr
-            (≈ {fmt(result.monthly_drawdown, currency)}/mo)</p>
+        <Card title={t.results_card_title.replace("{years}", String(years))}>
+          <p><b>{t.results_pot}</b> {fmt(result.fv, currency)}</p>
+          <p><b>{t.results_draw}</b> {fmt(result.annual_drawdown, currency)}{t.results_per_yr}
+            (≈ {fmt(result.monthly_drawdown, currency)}{t.results_per_mo})</p>
           <p style={{ opacity: 0.85 }}>
-            Inflation-adjusted (2.25%): {fmt(result.annual_drawdown_real, currency)}/yr
-            (≈ {fmt(result.monthly_drawdown_real, currency)}/mo)
+            {t.results_inflation} {fmt(result.annual_drawdown_real, currency)}{t.results_per_yr}
+            (≈ {fmt(result.monthly_drawdown_real, currency)}{t.results_per_mo})
           </p>
-          <p style={{ marginTop: 8 }}><b>Tier:</b> {result.tier_name}</p>
+          <p style={{ marginTop: 8 }}><b>{t.results_tier}</b> {result.tier_name}</p>
           <p style={{ opacity: 0.9 }}>{result.tier_desc}</p>
         </Card>
 
-        <Card title="Lifestyle deep-dive">
+        <Card title={t.results_lifestyle}>
           <div style={{ lineHeight: 1.6 }}>
             <ReactMarkdown>{result.lifestyle_md}</ReactMarkdown>
           </div>
         </Card>
 
         <p style={{ fontSize: 13, opacity: 0.55, margin: "12px 0" }}>
-          Notes: Projections assume end-of-month contributions and a constant average return.
-          Taxes and fees are ignored.
+          {t.results_notes}
         </p>
 
         <div style={{ display: "flex", gap: 10, marginTop: 4 }}>
-          <Btn onClick={() => setStep(4)}>← Edit</Btn>
-          <Btn primary onClick={onBack}>Back to home</Btn>
+          <Btn onClick={() => setStep(4)}>{t.results_edit}</Btn>
+          <Btn primary onClick={onBack}>{t.back_home}</Btn>
         </div>
       </>}
 

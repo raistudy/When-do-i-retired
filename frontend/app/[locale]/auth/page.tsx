@@ -7,5 +7,6 @@ export default function Auth() {
   const router = useRouter();
   const locale = (params?.locale as string) || "en";
 
-  return <AuthPage onBack={() => router.push(`/${locale}`)} />;
-}
+  return (
+  <AuthPage onBack={() => router.push(`/${locale}`)} locale={locale} />
+)

@@ -8,6 +8,12 @@ const C = {
   teal: "#1F8A86", mustard: "#E0B12E", ink: "#1B1B1B",
 };
 
+const MESSAGES: Record<string, any> = {
+  en: require("@/messages/en.json"),
+  id: require("@/messages/id.json"),
+  zh: require("@/messages/zh.json"),
+};
+
 function fmt(value: number, currency: string) {
   const sym: Record<string, string> = { EUR: "€", IDR: "Rp", CNY: "¥" };
   const s = sym[currency] ?? "";
@@ -69,10 +75,12 @@ const inputStyle = {
 type Tab = "dashboard" | "networth" | "cashflow" | "runway" | "save";
 
 export default function NetWorthTracker({
-  currency, onBack, user
+  currency, onBack, user, locale = "en",
 }: {
-  currency: string; onBack: () => void; user: any;
+  currency: string; onBack: () => void; user: any; locale?: string;
 }) {
+  const t = (MESSAGES[locale] || MESSAGES.en).networth;
+
   const [tab, setTab] = useState<Tab>("dashboard");
   const [assets, setAssets] = useState<any[]>([]);
   const [debts, setDebts] = useState<any[]>([]);
@@ -85,11 +93,11 @@ export default function NetWorthTracker({
   const [saveMsg, setSaveMsg] = useState("");
   const [restoring, setRestoring] = useState(true);
 
-  const [aCat, setACat] = useState("Cash");
+  const [aCat, setACat] = useState(0); // index into t.asset_categories
   const [aName, setAName] = useState("");
   const [aValue, setAValue] = useState(0);
 
-  const [dType, setDType] = useState("Mortgage");
+  const [dType, setDType] = useState(0); // index into t.debt_types
   const [dName, setDName] = useState("");
   const [dBalance, setDBalance] = useState(0);
   const [dInterest, setDInterest] = useState(0);
@@ -164,9 +172,9 @@ export default function NetWorthTracker({
             result: res.data,
           },
         });
-        setSaveMsg(error ? "⚠️ Could not save snapshot." : "✅ Snapshot saved!");
+        setSaveMsg(error ? t.save_error : t.save_success);
       } else {
-        setSaveMsg("ℹ️ Sign in to save your results.");
+        setSaveMsg(t.save_signin);
       }
     } catch {
       alert("Could not connect to backend. Make sure uvicorn is running.");
@@ -176,21 +184,21 @@ export default function NetWorthTracker({
 
   if (restoring) return (
     <main style={{ maxWidth: 680, margin: "0 auto", padding: "2rem 1.2rem" }}>
-      <p style={{ opacity: 0.5 }}>Restoring your last session...</p>
+      <p style={{ opacity: 0.5 }}>{t.restoring}</p>
     </main>
   );
 
   const tabs: { key: Tab; label: string }[] = [
-    { key: "dashboard", label: "Dashboard" },
-    { key: "networth", label: "Net Worth" },
-    { key: "cashflow", label: "Cash Flow" },
-    { key: "runway", label: "Runway" },
-    { key: "save", label: "Save & Export" },
+    { key: "dashboard", label: t.tab_dashboard },
+    { key: "networth", label: t.tab_networth },
+    { key: "cashflow", label: t.tab_cashflow },
+    { key: "runway", label: t.tab_runway },
+    { key: "save", label: t.tab_save },
   ];
 
   return (
     <main style={{ maxWidth: 680, margin: "0 auto", padding: "2rem 1.2rem" }}>
-      <h1 style={{ fontWeight: 800, fontSize: "1.8rem", marginBottom: 4 }}>Net Worth Tracker</h1>
+      <h1 style={{ fontWeight: 800, fontSize: "1.8rem", marginBottom: 4 }}>{t.title}</h1>
 
       {user && (
         <div style={{
@@ -198,57 +206,55 @@ export default function NetWorthTracker({
           border: `1px solid ${C.ink}`, borderRadius: 8,
           padding: "3px 10px", marginBottom: 12,
         }}>
-          Signed in as <b>{user.email}</b>
+          {t.signed_in_as} <b>{user.email}</b>
         </div>
       )}
 
-      <p style={{ fontSize: 13, opacity: 0.55, marginBottom: "1.2rem" }}>
-        Tracks net worth, monthly cash flow, and financial runway.
-      </p>
+      <p style={{ fontSize: 13, opacity: 0.55, marginBottom: "1.2rem" }}>{t.subtitle}</p>
 
       {/* Tab bar */}
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 16 }}>
-        {tabs.map(t => (
-          <button key={t.key} onClick={() => setTab(t.key)} style={{
-            background: tab === t.key ? C.ink : C.paper,
-            color: tab === t.key ? C.paper : C.ink,
+        {tabs.map(tb => (
+          <button key={tb.key} onClick={() => setTab(tb.key)} style={{
+            background: tab === tb.key ? C.ink : C.paper,
+            color: tab === tb.key ? C.paper : C.ink,
             border: `2px solid ${C.ink}`, borderRadius: 10,
             padding: "7px 14px", fontWeight: 700, fontSize: 13, cursor: "pointer",
-          }}>{t.label}</button>
+          }}>{tb.label}</button>
         ))}
       </div>
 
       {/* ── Dashboard ── */}
       {tab === "dashboard" && <>
         <div style={{ display: "flex", gap: 10, marginBottom: 10 }}>
-          <Metric label="Net worth" value={fmt(netWorth, currency)} />
-          <Metric label="Cash flow" value={fmt(cashflow, currency)} />
-          <Metric label="Runway" value={essentialTotal > 0 ? `${runway.toFixed(1)} mo` : "Set essentials"} />
+          <Metric label={t.metric_networth} value={fmt(netWorth, currency)} />
+          <Metric label={t.metric_cashflow} value={fmt(cashflow, currency)} />
+          <Metric label={t.metric_runway} value={essentialTotal > 0 ? `${runway.toFixed(1)} mo` : t.set_essentials} />
         </div>
 
-        <Card title="Pillar 1: Net worth">
-          Assets: <b>{fmt(assetsTotal, currency)}</b><br />
-          Debts: <b>{fmt(debtsTotal, currency)}</b>
+        <Card title={t.pillar1_title}>
+          {t.pillar1_assets} <b>{fmt(assetsTotal, currency)}</b><br />
+          {t.pillar1_debts} <b>{fmt(debtsTotal, currency)}</b>
         </Card>
 
-        <Card title="Pillar 2: Cash flow (this month)">
-          Income: <b>{fmt(incomeTotal, currency)}</b><br />
-          Expenses: <b>{fmt(expenseTotal, currency)}</b>
+        <Card title={t.pillar2_title}>
+          {t.pillar2_income} <b>{fmt(incomeTotal, currency)}</b><br />
+          {t.pillar2_expenses} <b>{fmt(expenseTotal, currency)}</b>
         </Card>
 
-        <Card title="Pillar 3: Financial runway">
+        <Card title={t.pillar3_title}>
           {essentialTotal <= 0
-            ? <>Emergency fund: <b>{fmt(emergencyFund, currency)}</b><br />Essential expenses: <b>not set</b></>
+            ? <>{t.pillar3_emergency} <b>{fmt(emergencyFund, currency)}</b><br />{t.pillar3_essential} <b>{t.pillar3_not_set}</b></>
             : <>
-              Emergency fund: <b>{fmt(emergencyFund, currency)}</b><br />
-              Essential expenses: <b>{fmt(essentialTotal, currency)}/mo</b><br />
-              Runway: <b>{runway.toFixed(1)} months</b>
+              {t.pillar3_emergency} <b>{fmt(emergencyFund, currency)}</b><br />
+              {t.pillar3_essential} <b>{fmt(essentialTotal, currency)}/mo</b><br />
+              {t.pillar3_runway} <b>{runway.toFixed(1)} {t.pillar3_months}</b>
             </>
           }
         </Card>
 
         {result && (
-          <Card title={`Status: ${result.status}`}
+          <Card title={`${t.status_prefix} ${result.status}`}
             bg={result.status === "Stable" ? C.teal : C.mustard}>
             <span style={{ color: "white" }}>{result.status_msg}</span>
           </Card>
@@ -263,34 +269,35 @@ export default function NetWorthTracker({
         )}
 
         <div style={{ display: "flex", gap: 10, marginTop: 8 }}>
-          <Btn onClick={onBack}>Back to home</Btn>
+          <Btn onClick={onBack}>{t.back_home}</Btn>
           <Btn primary onClick={calculate} disabled={loading}>
-            {loading ? "Calculating..." : "Calculate"}
+            {loading ? t.calculating : t.calculate}
           </Btn>
         </div>
       </>}
 
       {/* ── Net Worth ── */}
       {tab === "networth" && <>
-        <h2 style={{ fontWeight: 800, fontSize: "1.2rem", marginBottom: 10 }}>Assets</h2>
-        <Card title="Add asset">
-          <select value={aCat} onChange={e => setACat(e.target.value)}
+        <h2 style={{ fontWeight: 800, fontSize: "1.2rem", marginBottom: 10 }}>{t.assets_title}</h2>
+        <Card title={t.add_asset_card}>
+          <select value={aCat} onChange={e => setACat(Number(e.target.value))}
             style={{ ...inputStyle, cursor: "pointer" }}>
-            {["Cash", "Investments", "Property", "Other"].map(c => <option key={c}>{c}</option>)}
+            {t.asset_categories.map((c: string, i: number) => <option key={i} value={i}>{c}</option>)}
           </select>
-          <input style={inputStyle} placeholder="Name (e.g. Savings account)"
+          <input style={inputStyle} placeholder={t.asset_name_placeholder}
             value={aName} onChange={e => setAName(e.target.value)} />
-          <input type="number" style={inputStyle} placeholder={`Value (${currency})`}
+          <input type="number" style={inputStyle}
+            placeholder={t.asset_value_placeholder.replace("{currency}", currency)}
             value={aValue || ""} onChange={e => setAValue(Number(e.target.value))} />
           <Btn primary onClick={() => {
             if (!aName.trim()) return;
-            setAssets([...assets, { category: aCat, name: aName, value: aValue }]);
+            setAssets([...assets, { category: t.asset_categories[aCat], name: aName, value: aValue }]);
             setAName(""); setAValue(0);
-          }}>Add asset</Btn>
+          }}>{t.add_asset_btn}</Btn>
         </Card>
 
         {assets.length === 0
-          ? <p style={{ fontSize: 13, opacity: 0.5 }}>No assets yet.</p>
+          ? <p style={{ fontSize: 13, opacity: 0.5 }}>{t.no_assets}</p>
           : assets.map((a, i) => (
             <div key={i} style={{
               display: "flex", justifyContent: "space-between", alignItems: "center",
@@ -310,29 +317,30 @@ export default function NetWorthTracker({
           ))}
 
         <hr style={{ border: "none", borderTop: `2px dashed rgba(27,27,27,0.12)`, margin: "16px 0" }} />
-        <h2 style={{ fontWeight: 800, fontSize: "1.2rem", marginBottom: 10 }}>Debts</h2>
-        <Card title="Add debt">
-          <select value={dType} onChange={e => setDType(e.target.value)}
+        <h2 style={{ fontWeight: 800, fontSize: "1.2rem", marginBottom: 10 }}>{t.debts_title}</h2>
+        <Card title={t.add_debt_card}>
+          <select value={dType} onChange={e => setDType(Number(e.target.value))}
             style={{ ...inputStyle, cursor: "pointer" }}>
-            {["Mortgage", "Loan", "Credit card", "Other"].map(c => <option key={c}>{c}</option>)}
+            {t.debt_types.map((c: string, i: number) => <option key={i} value={i}>{c}</option>)}
           </select>
-          <input style={inputStyle} placeholder="Name (e.g. Mortgage ABN)"
+          <input style={inputStyle} placeholder={t.debt_name_placeholder}
             value={dName} onChange={e => setDName(e.target.value)} />
-          <input type="number" style={inputStyle} placeholder={`Balance (${currency})`}
+          <input type="number" style={inputStyle}
+            placeholder={t.debt_balance_placeholder.replace("{currency}", currency)}
             value={dBalance || ""} onChange={e => setDBalance(Number(e.target.value))} />
-          <input type="number" style={inputStyle} placeholder="Interest rate (% per year)"
+          <input type="number" style={inputStyle} placeholder={t.debt_interest_placeholder}
             value={dInterest || ""} onChange={e => setDInterest(Number(e.target.value))} />
           <Btn primary onClick={() => {
             if (!dName.trim()) return;
-            setDebts([...debts, { type: dType, name: dName, balance: dBalance, interest: dInterest }]);
+            setDebts([...debts, { type: t.debt_types[dType], name: dName, balance: dBalance, interest: dInterest }]);
             setDName(""); setDBalance(0); setDInterest(0);
-          }}>Add debt</Btn>
+          }}>{t.add_debt_btn}</Btn>
         </Card>
 
         {debts.length === 0
-          ? <p style={{ fontSize: 13, opacity: 0.5 }}>No debts yet.</p>
+          ? <p style={{ fontSize: 13, opacity: 0.5 }}>{t.no_debts}</p>
           : debts.map((d, i) => {
-            const good = d.type === "Mortgage" || d.interest < 4;
+            const good = d.type === "Mortgage" || d.type === t.debt_types[0] || d.interest < 4;
             return (
               <div key={i} style={{
                 background: C.cream, border: `2px solid ${C.ink}`, borderRadius: 16,
@@ -349,7 +357,7 @@ export default function NetWorthTracker({
                       display: "inline-block", padding: "2px 10px", borderRadius: 999,
                       background: good ? C.teal : C.mustard,
                       color: "white", fontSize: 12, fontWeight: 700,
-                    }}>{good ? "Good" : "Bad"}</span>
+                    }}>{good ? t.debt_good : t.debt_bad}</span>
                     <button onClick={() => setDebts(debts.filter((_, j) => j !== i))}
                       style={{ marginLeft: 8, background: "none", border: "none", cursor: "pointer", fontSize: 14 }}>✕</button>
                   </div>
@@ -360,33 +368,32 @@ export default function NetWorthTracker({
 
         <hr style={{ border: "none", borderTop: `2px dashed rgba(27,27,27,0.12)`, margin: "16px 0" }} />
         <p style={{ fontSize: 14 }}>
-          <b>Assets:</b> {fmt(assetsTotal, currency)} &nbsp;
-          <b>Debts:</b> {fmt(debtsTotal, currency)} &nbsp;
-          <b>Net worth:</b> {fmt(netWorth, currency)}
+          <b>{t.nw_assets}</b> {fmt(assetsTotal, currency)} &nbsp;
+          <b>{t.nw_debts}</b> {fmt(debtsTotal, currency)} &nbsp;
+          <b>{t.nw_net}</b> {fmt(netWorth, currency)}
         </p>
       </>}
 
       {/* ── Cash Flow ── */}
       {tab === "cashflow" && <>
-        <h2 style={{ fontWeight: 800, fontSize: "1.2rem", marginBottom: 4 }}>Monthly cash flow</h2>
-        <p style={{ fontSize: 13, opacity: 0.55, marginBottom: 10 }}>
-          Track income and expenses. Essentials are used for runway.
-        </p>
+        <h2 style={{ fontWeight: 800, fontSize: "1.2rem", marginBottom: 4 }}>{t.cashflow_title}</h2>
+        <p style={{ fontSize: 13, opacity: 0.55, marginBottom: 10 }}>{t.cashflow_subtitle}</p>
 
-        <Card title="Add income">
-          <input style={inputStyle} placeholder="Name (e.g. Salary)"
+        <Card title={t.add_income_card}>
+          <input style={inputStyle} placeholder={t.income_name_placeholder}
             value={iName} onChange={e => setIName(e.target.value)} />
-          <input type="number" style={inputStyle} placeholder={`Amount (${currency})`}
+          <input type="number" style={inputStyle}
+            placeholder={t.income_amount_placeholder.replace("{currency}", currency)}
             value={iValue || ""} onChange={e => setIValue(Number(e.target.value))} />
           <Btn primary onClick={() => {
             if (!iName.trim()) return;
             setIncome([...income, { name: iName, value: iValue }]);
             setIName(""); setIValue(0);
-          }}>Add income</Btn>
+          }}>{t.add_income_btn}</Btn>
         </Card>
 
         {income.length === 0
-          ? <p style={{ fontSize: 13, opacity: 0.5 }}>No income items yet.</p>
+          ? <p style={{ fontSize: 13, opacity: 0.5 }}>{t.no_income}</p>
           : income.map((inc, i) => (
             <div key={i} style={{
               display: "flex", justifyContent: "space-between", alignItems: "center",
@@ -404,24 +411,25 @@ export default function NetWorthTracker({
 
         <hr style={{ border: "none", borderTop: `2px dashed rgba(27,27,27,0.12)`, margin: "16px 0" }} />
 
-        <Card title="Add expense">
-          <input style={inputStyle} placeholder="Name (e.g. Rent)"
+        <Card title={t.add_expense_card}>
+          <input style={inputStyle} placeholder={t.expense_name_placeholder}
             value={eName} onChange={e => setEName(e.target.value)} />
-          <input type="number" style={inputStyle} placeholder={`Amount (${currency})`}
+          <input type="number" style={inputStyle}
+            placeholder={t.expense_amount_placeholder.replace("{currency}", currency)}
             value={eValue || ""} onChange={e => setEValue(Number(e.target.value))} />
           <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14, marginBottom: 8, cursor: "pointer" }}>
             <input type="checkbox" checked={eEssential} onChange={e => setEEssential(e.target.checked)} />
-            Essential expense
+            {t.essential_label}
           </label>
           <Btn primary onClick={() => {
             if (!eName.trim()) return;
             setExpenses([...expenses, { name: eName, value: eValue, essential: eEssential }]);
             setEName(""); setEValue(0); setEEssential(true);
-          }}>Add expense</Btn>
+          }}>{t.add_expense_btn}</Btn>
         </Card>
 
         {expenses.length === 0
-          ? <p style={{ fontSize: 13, opacity: 0.5 }}>No expense items yet.</p>
+          ? <p style={{ fontSize: 13, opacity: 0.5 }}>{t.no_expenses}</p>
           : expenses.map((exp, i) => (
             <div key={i} style={{
               display: "flex", justifyContent: "space-between", alignItems: "center",
@@ -431,7 +439,7 @@ export default function NetWorthTracker({
               <div>
                 <span style={{ fontWeight: 700 }}>{exp.name}</span>
                 <span style={{ marginLeft: 8, fontSize: 12, opacity: 0.6 }}>
-                  {exp.essential ? "Essential" : "Discretionary"}
+                  {exp.essential ? t.essential_tag : t.discretionary_tag}
                 </span>
               </div>
               <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
@@ -444,43 +452,37 @@ export default function NetWorthTracker({
 
         <hr style={{ border: "none", borderTop: `2px dashed rgba(27,27,27,0.12)`, margin: "16px 0" }} />
         <div style={{ display: "flex", gap: 10 }}>
-          <Metric label="Income" value={fmt(incomeTotal, currency)} />
-          <Metric label="Expenses" value={fmt(expenseTotal, currency)} />
-          <Metric label="Cash flow" value={fmt(cashflow, currency)} />
+          <Metric label={t.income_label} value={fmt(incomeTotal, currency)} />
+          <Metric label={t.expenses_label} value={fmt(expenseTotal, currency)} />
+          <Metric label={t.cashflow_label} value={fmt(cashflow, currency)} />
         </div>
         <p style={{ fontSize: 13, opacity: 0.55, marginTop: 8 }}>
-          Essential expenses used for runway: {fmt(essentialTotal, currency)}/mo
+          {t.essential_used.replace("{amount}", fmt(essentialTotal, currency))}
         </p>
       </>}
 
       {/* ── Runway ── */}
       {tab === "runway" && <>
-        <h2 style={{ fontWeight: 800, fontSize: "1.2rem", marginBottom: 4 }}>Emergency fund and runway</h2>
-        <p style={{ fontSize: 13, opacity: 0.55, marginBottom: 10 }}>
-          Emergency fund is separate and should be liquid cash.
-        </p>
-        <Card title="Emergency fund">
+        <h2 style={{ fontWeight: 800, fontSize: "1.2rem", marginBottom: 4 }}>{t.runway_title}</h2>
+        <p style={{ fontSize: 13, opacity: 0.55, marginBottom: 10 }}>{t.runway_subtitle}</p>
+        <Card title={t.emergency_card}>
           <input type="number" style={inputStyle}
-            placeholder={`Liquid cash (${currency})`}
+            placeholder={t.emergency_placeholder.replace("{currency}", currency)}
             value={emergencyFund || ""}
             onChange={e => setEmergencyFund(Number(e.target.value))} />
-          <p style={{ fontSize: 12, opacity: 0.55, margin: 0 }}>
-            Used to calculate your financial runway.
-          </p>
+          <p style={{ fontSize: 12, opacity: 0.55, margin: 0 }}>{t.emergency_desc}</p>
         </Card>
 
         {essentialTotal <= 0
-          ? <p style={{ fontSize: 13, opacity: 0.6 }}>
-              ⚠️ Set at least one expense as Essential in Cash Flow to calculate runway.
-            </p>
+          ? <p style={{ fontSize: 13, opacity: 0.6 }}>{t.runway_warning}</p>
           : <div style={{ display: "flex", gap: 10, marginBottom: 10 }}>
-              <Metric label="Essential expenses" value={`${fmt(essentialTotal, currency)}/mo`} />
-              <Metric label="Runway" value={`${runway.toFixed(1)} months`} />
+              <Metric label={t.essential_expenses_label} value={`${fmt(essentialTotal, currency)}/mo`} />
+              <Metric label={t.runway_label} value={`${runway.toFixed(1)} ${t.runway_months_suffix}`} />
             </div>
         }
 
         <hr style={{ border: "none", borderTop: `2px dashed rgba(27,27,27,0.12)`, margin: "16px 0" }} />
-        <h2 style={{ fontWeight: 800, fontSize: "1.1rem", marginBottom: 10 }}>Benchmarks</h2>
+        <h2 style={{ fontWeight: 800, fontSize: "1.1rem", marginBottom: 10 }}>{t.benchmarks_title}</h2>
         <div style={{ display: "flex", gap: 10 }}>
           {[3, 6, 12].map(m => (
             <div key={m} style={{
@@ -488,7 +490,7 @@ export default function NetWorthTracker({
               borderRadius: 14, padding: "12px", boxShadow: `2px 2px 0 ${C.ink}`,
               textAlign: "center",
             }}>
-              <div style={{ fontWeight: 700, marginBottom: 6 }}>{m} months</div>
+              <div style={{ fontWeight: 700, marginBottom: 6 }}>{m} {t.runway_months_suffix}</div>
               <div style={{ fontSize: 20 }}>{runway >= m ? "✅" : "⏳"}</div>
             </div>
           ))}
@@ -497,21 +499,19 @@ export default function NetWorthTracker({
 
       {/* ── Save & Export ── */}
       {tab === "save" && <>
-        <h2 style={{ fontWeight: 800, fontSize: "1.2rem", marginBottom: 4 }}>Save snapshot</h2>
+        <h2 style={{ fontWeight: 800, fontSize: "1.2rem", marginBottom: 4 }}>{t.save_title}</h2>
         <p style={{ fontSize: 13, opacity: 0.55, marginBottom: 10 }}>
-          {user
-            ? "Your snapshot is saved automatically every time you calculate."
-            : "Sign in from the home page to save your snapshots."}
+          {user ? t.save_subtitle_user : t.save_subtitle_guest}
         </p>
 
-        <Card title="Note (optional)">
+        <Card title={t.note_card}>
           <textarea value={note} onChange={e => setNote(e.target.value)}
-            placeholder="Add a note about this snapshot..."
+            placeholder={t.note_placeholder}
             style={{ ...inputStyle, resize: "vertical", minHeight: 80, marginBottom: 0 }} />
         </Card>
 
         {result && (
-          <Card title={`Status: ${result.status}`}
+          <Card title={`${t.status_prefix} ${result.status}`}
             bg={result.status === "Stable" ? C.teal : C.mustard}>
             <span style={{ color: "white" }}>{result.status_msg}</span>
           </Card>
@@ -526,9 +526,9 @@ export default function NetWorthTracker({
         )}
 
         <div style={{ display: "flex", gap: 10, marginTop: 8 }}>
-          <Btn onClick={onBack}>Back to home</Btn>
+          <Btn onClick={onBack}>{t.back_home}</Btn>
           <Btn primary onClick={calculate} disabled={loading}>
-            {loading ? "Saving..." : "Calculate & Save"}
+            {loading ? t.saving : t.calculate_save_btn}
           </Btn>
         </div>
       </>}

@@ -8,16 +8,24 @@ const C = {
   teal: "#1F8A86", mustard: "#E0B12E", ink: "#1B1B1B",
 };
 
-export default function AuthPage({ onBack }: { onBack: () => void }) {
+const MESSAGES: Record<string, any> = {
+  en: require("@/messages/en.json"),
+  id: require("@/messages/id.json"),
+  zh: require("@/messages/zh.json"),
+};
+
+export default function AuthPage({ onBack, locale = "en" }: { onBack: () => void; locale?: string }) {
+  const t = (MESSAGES[locale] || MESSAGES.en).auth;
+
   return (
     <main style={{ maxWidth: 680, margin: "0 auto", padding: "2rem 1.2rem" }}>
 
       {/* Header */}
       <h1 style={{ fontWeight: 800, fontSize: "1.8rem", marginBottom: 4 }}>
-        When do I Retired
+        {t.title}
       </h1>
       <p style={{ fontSize: 13, opacity: 0.55, marginBottom: "1.5rem" }}>
-        Sign in to save your snapshots and access them from anywhere.
+        {t.subtitle}
       </p>
 
       {/* Auth card */}
@@ -70,7 +78,7 @@ export default function AuthPage({ onBack }: { onBack: () => void }) {
         fontSize: 14,
         cursor: "pointer",
       }}>
-        ← Back to home
+        {t.back}
       </button>
 
     </main>
