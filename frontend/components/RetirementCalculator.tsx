@@ -199,7 +199,7 @@ function makeChartOptions(
   yTicks: number[],
   scale: ReturnType<typeof buildYScale>,
   currency: string,
-  onHoverFn: (evt: any, ch: any) => void
+  onHoverFn: (evt: any, elements: any, ch: any) => void
 ) {
   return {
     responsive: true,
