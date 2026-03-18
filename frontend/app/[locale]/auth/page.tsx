@@ -9,4 +9,4 @@ export default function Auth() {
 
   return (
   <AuthPage onBack={() => router.push(`/${locale}`)} locale={locale} />
-)
+)}
