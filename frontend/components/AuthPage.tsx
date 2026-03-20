@@ -78,8 +78,7 @@ export default function AuthPage({ onBack, locale = "en" }: { onBack: () => void
                 button_label: "Sign in",
                 loading_button_label: "Signing in...",
                 link_text: "Don't have an account? Sign up",
-                forgotten_password_label: "Forgot your password?",
-              },
+                },
               sign_up: {
                 email_label: "Email",
                 password_label: "Create a password",
