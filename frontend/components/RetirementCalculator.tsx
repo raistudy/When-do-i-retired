@@ -199,7 +199,7 @@ function makeChartOptions(
   yTicks: number[],
   scale: ReturnType<typeof buildYScale>,
   currency: string,
-  onHoverFn: (evt: any, elements: any, ch: any) => void
+  onHoverFn: (...args: any[]) => void
 ) {
   return {
     responsive: true,
@@ -338,9 +338,9 @@ export default function RetirementCalculator({
           setReturnChoice(inp.returnChoice ?? "Medium (bonds 6%)");
           setYears(inp.years ?? 15);
           setResult(data.payload.result ?? null);
-           if (data.payload.scenarios?.length) {
+          if (data.payload.scenarios?.length) {
             setScenarios(data.payload.scenarios);
-           }
+          }
           if (data.payload.result) setStep(5);
         }
         setRestoring(false);
@@ -502,26 +502,6 @@ export default function RetirementCalculator({
         };
       });
 
-      useEffect(() => {
-  if (!user || !result || scenarios.length === 0) return;
-  // Debounce to avoid hammering Supabase on every change
-  const timer = setTimeout(async () => {
-    await supabase
-      .from("retirement_snapshots")
-      .update({
-        payload: {
-          inputs: { name, amount, monthly, wantMonthly, returnChoice, years },
-          result,
-          scenarios,
-        },
-      })
-      .eq("user_id", user.id)
-      .order("created_at", { ascending: false })
-      .limit(1);
-  }, 1000);
-  return () => clearTimeout(timer);
-}, [scenarios]);
-
       const onHover = (evt: any, _: any, ch: any) => {
         if (!tipEl) return;
         const rect = ch.canvas.getBoundingClientRect();
@@ -571,6 +551,31 @@ export default function RetirementCalculator({
       if (scenChartInstance.current) { scenChartInstance.current.destroy(); scenChartInstance.current = null; }
     };
   }, [step, scenarios, activeIdx, currency]);
+
+  // ── Auto-save scenarios to Supabase when they change ─
+  useEffect(() => {
+    if (!user || !result || scenarios.length === 0) return;
+    const timer = setTimeout(async () => {
+      const { data: rows } = await supabase
+        .from("retirement_snapshots")
+        .select("id")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(1);
+      if (!rows?.length) return;
+      await supabase
+        .from("retirement_snapshots")
+        .update({
+          payload: {
+            inputs: { name, amount, monthly, wantMonthly, returnChoice, years },
+            result,
+            scenarios,
+          },
+        })
+        .eq("id", rows[0].id);
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [scenarios]);
 
   // ── Scenario CRUD ─────────────────────────────────
   function openModal(idx: number) {
