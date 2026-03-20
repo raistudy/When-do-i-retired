@@ -657,11 +657,23 @@ export default function NetWorthTracker({ currency, onBack, user, locale = "en" 
       {/* ── Overview ── */}
       {tab === "overview" && <>
 
-        {result && (
-          <Card title={`${t.status_prefix} ${result.status}`} bg={result.status === "Stable" ? C.teal : C.mustard}>
-            <span style={{ color: "white" }}>{result.status_msg}</span>
-          </Card>
-        )}
+        {/* 3 clickable metric cards — TOP */}
+        <div style={{ display: "flex", gap: 10, marginBottom: 14 }}>
+          {[
+            { label: t.metric_networth, value: fmt(netWorth, currency), tab: "networth" as Tab },
+            { label: t.metric_cashflow, value: fmt(cashflow, currency), tab: "cashflow" as Tab, color: cashflow >= 0 ? C.teal : C.coral },
+            { label: t.metric_runway, value: essentialTotal > 0 ? `${runway.toFixed(1)} mo` : t.set_essentials, tab: "runway" as Tab },
+          ].map(m => (
+            <div key={m.tab} onClick={() => setTab(m.tab)} style={{ background: C.cream, border: `2px solid ${C.ink}`, borderRadius: 16, padding: "12px 14px", boxShadow: `3px 3px 0 ${C.ink}`, textAlign: "center", flex: 1, cursor: "pointer" }}
+              onMouseEnter={e => (e.currentTarget.style.background = "#F0E8CE")}
+              onMouseLeave={e => (e.currentTarget.style.background = C.cream)}>
+              <div style={{ fontSize: 12, opacity: 0.6, marginBottom: 4 }}>{m.label}</div>
+              <div style={{ fontWeight: 800, fontSize: 15, color: (m as any).color ?? C.ink }}>{m.value}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* Pillar 1 — clickable */}
         <div onClick={() => setTab("networth")} style={{ background: C.cream, border: `2px solid ${C.ink}`, borderRadius: 18, padding: "14px 16px", boxShadow: `3px 3px 0 ${C.ink}`, marginBottom: 10, cursor: "pointer" }}
           onMouseEnter={e => (e.currentTarget.style.background = "#F0E8CE")}
           onMouseLeave={e => (e.currentTarget.style.background = C.cream)}>
@@ -700,21 +712,13 @@ export default function NetWorthTracker({ currency, onBack, user, locale = "en" 
           </div>
         </div>
 
-        {/* 3 clickable metric cards */}
-        <div style={{ display: "flex", gap: 10, marginBottom: 14 }}>
-          {[
-            { label: t.metric_networth, value: fmt(netWorth, currency), tab: "networth" as Tab },
-            { label: t.metric_cashflow, value: fmt(cashflow, currency), tab: "cashflow" as Tab, color: cashflow >= 0 ? C.teal : C.coral },
-            { label: t.metric_runway, value: essentialTotal > 0 ? `${runway.toFixed(1)} mo` : t.set_essentials, tab: "runway" as Tab },
-          ].map(m => (
-            <div key={m.tab} onClick={() => setTab(m.tab)} style={{ background: C.cream, border: `2px solid ${C.ink}`, borderRadius: 16, padding: "12px 14px", boxShadow: `3px 3px 0 ${C.ink}`, textAlign: "center", flex: 1, cursor: "pointer" }}
-              onMouseEnter={e => (e.currentTarget.style.background = "#F0E8CE")}
-              onMouseLeave={e => (e.currentTarget.style.background = C.cream)}>
-              <div style={{ fontSize: 12, opacity: 0.6, marginBottom: 4 }}>{m.label}</div>
-              <div style={{ fontWeight: 800, fontSize: 15, color: (m as any).color ?? C.ink }}>{m.value}</div>
-            </div>
-          ))}
-        </div>
+        {/* Status card */}
+        {result && (
+          <Card title={`${t.status_prefix} ${result.status}`} bg={result.status === "Stable" ? C.teal : C.mustard}>
+            <span style={{ color: "white" }}>{result.status_msg}</span>
+          </Card>
+        )}
+
         {saveMsg && (
           <div style={{ fontSize: 13, marginBottom: 12, padding: "8px 14px", background: C.cream, border: `2px solid ${C.ink}`, borderRadius: 12, boxShadow: `2px 2px 0 ${C.ink}` }}>
             {saveMsg}
