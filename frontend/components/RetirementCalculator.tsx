@@ -338,6 +338,9 @@ export default function RetirementCalculator({
           setReturnChoice(inp.returnChoice ?? "Medium (bonds 6%)");
           setYears(inp.years ?? 15);
           setResult(data.payload.result ?? null);
+           if (data.payload.scenarios?.length) {
+            setScenarios(data.payload.scenarios);
+           }
           if (data.payload.result) setStep(5);
         }
         setRestoring(false);
@@ -378,6 +381,15 @@ export default function RetirementCalculator({
           payload: {
             inputs: { name, amount, monthly, wantMonthly, returnChoice, years },
             result: res.data,
+            scenarios: [{
+              id: Date.now(),
+              name: name || "Base plan",
+              pv: amount,
+              pmt: wantMonthly ? monthly : 0,
+              r: RATE_MAP[returnChoice],
+              target: years,
+              color: SCENARIO_COLORS[0],
+            }],
           },
         });
         setSaveMsg(error ? t.save_error : t.save_success);
@@ -489,6 +501,26 @@ export default function RetirementCalculator({
           order: active ? 1 : 2,
         };
       });
+
+      useEffect(() => {
+  if (!user || !result || scenarios.length === 0) return;
+  // Debounce to avoid hammering Supabase on every change
+  const timer = setTimeout(async () => {
+    await supabase
+      .from("retirement_snapshots")
+      .update({
+        payload: {
+          inputs: { name, amount, monthly, wantMonthly, returnChoice, years },
+          result,
+          scenarios,
+        },
+      })
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false })
+      .limit(1);
+  }, 1000);
+  return () => clearTimeout(timer);
+}, [scenarios]);
 
       const onHover = (evt: any, _: any, ch: any) => {
         if (!tipEl) return;
